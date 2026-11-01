@@ -1,11 +1,16 @@
-const path = require('path');
-const { merge } = require('webpack-merge');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const DotenvWebpackPlugin = require('dotenv-webpack');
+import { resolve as _resolve } from 'path';
+import { merge } from 'webpack-merge';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import { CleanWebpackPlugin } from 'clean-webpack-plugin';
+import DotenvWebpackPlugin from 'dotenv-webpack';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const baseConfig = {
-    entry: path.resolve(__dirname, './src/index.js'),
+    entry: _resolve(__dirname, './src/index.js'),
     mode: 'development',
     module: {
         rules: [
@@ -16,25 +21,29 @@ const baseConfig = {
         ],
     },
     resolve: {
-        extensions: ['.js'],
+        extensions: ['.ts', '.js', '.json'],
     },
     output: {
         filename: 'index.js',
-        path: path.resolve(__dirname, './dist'),
+        path: _resolve(__dirname, './dist'),
     },
     plugins: [
         new DotenvWebpackPlugin(),
         new HtmlWebpackPlugin({
-            template: path.resolve(__dirname, './src/index.html'),
+            template: _resolve(__dirname, './src/index.html'),
             filename: 'index.html',
         }),
         new CleanWebpackPlugin(),
     ],
 };
 
-module.exports = ({ mode }) => {
+export default async ({ mode }) => {
     const isProductionMode = mode === 'prod';
-    const envConfig = isProductionMode ? require('./webpack.prod.config') : require('./webpack.dev.config');
+    
+    // Динамический импорт возвращает объект модуля, берем из него default
+    const { default: envConfig } = isProductionMode 
+        ? await import('./webpack.prod.config.js') 
+        : await import('./webpack.dev.config.js');
 
     return merge(baseConfig, envConfig);
 };
