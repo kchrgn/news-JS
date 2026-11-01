@@ -1,9 +1,14 @@
-const path = require('path');
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-module.exports = {
+// Создаем аналог __dirname для ES-модулей
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+export default {
     mode: 'development',
     devtool: 'inline-source-map',
     devServer: {
-        static: path.resolve(__dirname, './dist'),
+        static: resolve(__dirname, './dist'),
     },
 };
